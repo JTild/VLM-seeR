@@ -1,0 +1,4 @@
+Pillow==12.2.0
+qwen_vl_utils==0.0.14
+torch==2.5.1+cu121
+transformers==5.4.0

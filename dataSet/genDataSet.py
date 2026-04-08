@@ -1,78 +1,102 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import json
-from pathlib import Path
-from tqdm import tqdm
+# Variables
+from torchsig.signals.signal_lists import TorchSigSignalLists
+from torchsig.transforms.transforms import ComplexTo2D
+import os
 
-# ====================== 配置 ======================
-SAMPLE_COUNT = 2000  # 生成多少条数据
-IMAGE_DIR = Path("./sig53_images")
-JSONL_PATH = "sig53_vl_train.jsonl"
-IMAGE_DIR.mkdir(exist_ok=True)
+from torch import Tensor
 
-# ====================== 模拟Sig53的53类信号（和官方完全一致） ======================
+root = "./classifier_example"
+os.makedirs(root, exist_ok=True)
+os.makedirs(root + "/train", exist_ok=True)
+os.makedirs(root + "/val", exist_ok=True)
+os.makedirs(root + "/test", exist_ok=True)
+fft_size = 256
+num_iq_samples_dataset = fft_size ** 2
+class_list = TorchSigSignalLists.all_signals
+family_list = TorchSigSignalLists.family_list
+num_classes = len(class_list)
+num_samples_train = len(class_list) * 5  # roughly 5 samples per class
+num_samples_val = len(class_list) * 2
+impairment_level = 0
+seed = 123456789
+# IQ-based mod-rec only operates on 1 signal
+num_signals_max = 1
+num_signals_min = 1
 
-CLASS_NAMES = [
-    "OOK", "4ASK", "8ASK", "16ASK", "32ASK", "64ASK",
-    "2FSK", "4FSK", "8FSK", "16FSK", "32FSK", "64FSK",
-    "2PSK", "4PSK", "8PSK", "16PSK", "32PSK", "64PSK",
-    "2QAM", "4QAM", "8QAM", "16QAM", "32QAM", "64QAM", "128QAM", "256QAM",
-    "FM", "FM_OPN", "FM_NBN", "FM_WBN",
-    "AM", "AM_USB", "AM_LSB", "AM_ISB",
-    "OFDM512", "OFDM1024", "OFDM1536", "OFDM2048",
-    "CPFSK2", "CPFSK4", "GFSK2", "GFSK4",
-    "MSK", "OQPSK", "PI4QPSK",
-    "SOI", "NOI", "BT", "FM_SR", "AM_SR", "QAM_SR", "PSK_SR", "FSK_SR"
-]
+# ComplexTo2D turns a IQ array of complex values into a 2D array, with one channel for the real component, while the other is for the imaginary component
+transforms = [ComplexTo2D()]
 
+dataset_metadata = {
+	"num_iq_samples_dataset": num_iq_samples_dataset,
+	"fft_size": fft_size,
+	"fft_stride": fft_size,
+	"num_signals_max": num_signals_max,
+	"num_signals_min": num_signals_min,
+	"noise_power_db": 1,
+	"signal_center_freq_min": 1000,
+	"signal_center_freq_max": 2000,
+	"sample_rate": 10000,
+	"frequency_min": 1000,
+	"frequency_max": 2000,
+	"cochannel_overlap_probability": 0.2,
+	"signal_duration_in_samples_min": 2000,
+	"signal_duration_in_samples_max": 8000,
+	"bandwidth_min": 1000,
+	"bandwidth_max": 2000,
+	"snr_db_min":10,
+	"snr_db_max":20,
+}
 
-# ====================== 生成模拟频谱图（视觉效果和Sig53完全一致） ======================
-def generate_fake_spectrogram():
-    """生成和Sig53风格一致的频谱图"""
-    spec = np.random.randn(128, 128)  # 时频图尺寸
-    spec = np.abs(spec)
-    spec += np.random.rand(*spec.shape) * 0.3
-    return spec
+from torchsig.datasets.datasets import TorchSigIterableDataset, StaticTorchSigDataset
+from torchsig.utils.data_loading import WorkerSeedingDataLoader
+from torchsig.utils.writer import DatasetCreator
 
+train_dataset = TorchSigIterableDataset(
+	metadata=dataset_metadata,
+	transforms=transforms,
+	target_labels=None,
+	signal_generators="all",
+)
+val_dataset = TorchSigIterableDataset(
+	metadata=dataset_metadata, transforms=transforms, target_labels=None
+)
 
-# ====================== 生成VLM微调数据集 ======================
-json_lines = []
+class_list = train_dataset.class_names
 
-for idx in tqdm(range(SAMPLE_COUNT)):
-    # 随机选一个信号类别
-    label = np.random.randint(0, 53)
-    mod_name = CLASS_NAMES[label]
+train_dataloader = WorkerSeedingDataLoader(
+	train_dataset, batch_size=4, collate_fn=lambda x: x
+)
+val_dataloader = WorkerSeedingDataLoader(val_dataset, collate_fn=lambda x: x)
 
-    # 生成频谱图
-    spec = generate_fake_spectrogram()
+# print(f"Data shape: {data.shape}")
+# print(f"Targets: {targets}")
+# next(train_dataset)
 
-    # 保存图片
-    img_path = IMAGE_DIR / f"sig_sample_{idx:06d}.png"
-    plt.imsave(img_path, spec, cmap="viridis")
+dc = DatasetCreator(
+	dataloader=train_dataloader,
+	root=f"{root}/train",
+	overwrite=True,
+	dataset_length=num_samples_train,
 
-    # 构造VLM微调格式（完美适配Qwen2.5-VL）
-    sample = {
-        "id": f"sig_{idx}",
-        "image": str(img_path),
-        "conversations": [
-            {
-                "role": "user",
-                "content": "这张频谱图是什么调制信号类型？"
-            },
-            {
-                "role": "assistant",
-                "content": f"该信号调制方式为：{mod_name}"
-            }
-        ]
-    }
-    json_lines.append(sample)
+)
+dc.create()
 
-# 保存JSONL
-with open(JSONL_PATH, "w", encoding="utf-8") as f:
-    for line in json_lines:
-        f.write(json.dumps(line, ensure_ascii=False) + "\n")
+dc = DatasetCreator(
+	dataloader=val_dataloader,
+	root=f"{root}/val",
+	overwrite=True,
+	dataset_length=num_samples_val,
+)
+dc.create()
 
-print("\n✅ 数据集生成完成！")
-print(f"📸 图片目录：{IMAGE_DIR}")
-print(f"📄 微调JSONL：{JSONL_PATH}")
-print("\n🎉 现在可以直接用于 Qwen2.5-VL 微调！")
+# train_dataset = StaticTorchSigDataset(
+# 	root=f"{root}/train", target_labels=["class_index"]
+# )
+# val_dataset = StaticTorchSigDataset(root=f"{root}/val", target_labels=["class_index"])
+#
+# train_dataloader = WorkerSeedingDataLoader(train_dataset, batch_size=4)
+# val_dataloader = WorkerSeedingDataLoader(val_dataset)
+#
+# print(train_dataset[3])
+#
+# next(iter(train_dataloader))

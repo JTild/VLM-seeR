@@ -1,9 +1,9 @@
-# Variables
 from torchsig.signals.signal_lists import TorchSigSignalLists
 from torchsig.transforms.transforms import ComplexTo2D
 import os
-
-from torch import Tensor
+from torchsig.datasets.datasets import TorchSigIterableDataset, StaticTorchSigDataset
+from torchsig.utils.data_loading import WorkerSeedingDataLoader
+from torchsig.utils.writer import DatasetCreator
 
 root = "./classifier_example"
 os.makedirs(root, exist_ok=True)
@@ -18,7 +18,6 @@ num_classes = len(class_list)
 num_samples_train = len(class_list) * 5  # roughly 5 samples per class
 num_samples_val = len(class_list) * 2
 impairment_level = 0
-seed = 123456789
 # IQ-based mod-rec only operates on 1 signal
 num_signals_max = 1
 num_signals_min = 1
@@ -47,9 +46,6 @@ dataset_metadata = {
 	"snr_db_max":20,
 }
 
-from torchsig.datasets.datasets import TorchSigIterableDataset, StaticTorchSigDataset
-from torchsig.utils.data_loading import WorkerSeedingDataLoader
-from torchsig.utils.writer import DatasetCreator
 
 train_dataset = TorchSigIterableDataset(
 	metadata=dataset_metadata,

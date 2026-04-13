@@ -5,18 +5,20 @@ from torchsig.datasets.datasets import TorchSigIterableDataset, StaticTorchSigDa
 from torchsig.utils.data_loading import WorkerSeedingDataLoader
 from torchsig.utils.writer import DatasetCreator
 
+
 root = "./classifier_example"
 os.makedirs(root, exist_ok=True)
 os.makedirs(root + "/train", exist_ok=True)
 os.makedirs(root + "/val", exist_ok=True)
 os.makedirs(root + "/test", exist_ok=True)
-fft_size = 256
-num_iq_samples_dataset = fft_size ** 2
+fft_size = 512
+sample_rate = 10000
+num_iq_samples_dataset = 80000
 class_list = TorchSigSignalLists.all_signals
 family_list = TorchSigSignalLists.family_list
 num_classes = len(class_list)
-num_samples_train = len(class_list) * 5  # roughly 5 samples per class
-num_samples_val = len(class_list) * 2
+num_samples_train = len(class_list) * 1  # roughly 5 samples per class
+num_samples_val = len(class_list) * 1
 impairment_level = 0
 # IQ-based mod-rec only operates on 1 signal
 num_signals_max = 1
@@ -34,11 +36,11 @@ dataset_metadata = {
 	"noise_power_db": 1,
 	"signal_center_freq_min": 1000,
 	"signal_center_freq_max": 2000,
-	"sample_rate": 10000,
+	"sample_rate": sample_rate,
 	"frequency_min": 1000,
 	"frequency_max": 2000,
 	"cochannel_overlap_probability": 0.2,
-	"signal_duration_in_samples_min": 2000,
+	"signal_duration_in_samples_min": 0,
 	"signal_duration_in_samples_max": 8000,
 	"bandwidth_min": 1000,
 	"bandwidth_max": 2000,
@@ -60,7 +62,7 @@ val_dataset = TorchSigIterableDataset(
 class_list = train_dataset.class_names
 
 train_dataloader = WorkerSeedingDataLoader(
-	train_dataset, batch_size=4, collate_fn=lambda x: x
+	train_dataset, batch_size=1, collate_fn=lambda x: x
 )
 val_dataloader = WorkerSeedingDataLoader(val_dataset, collate_fn=lambda x: x)
 

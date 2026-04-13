@@ -1,5 +1,3 @@
-import numpy as np
-
 def requiredSignalLengthForSquareSpectrogram(fs, L, overlapRatio=0.5):
     """
     计算使 STFT 时频图为方形所需的最小信号长度。
@@ -8,10 +6,9 @@ def requiredSignalLengthForSquareSpectrogram(fs, L, overlapRatio=0.5):
         fs : float
             采样率 (Hz)
         L : int
-            FFT 点数（窗长），通常为偶数
+            FFT 点数（窗长），通常为偶数点数
         overlapRatio : float, 默认 0.5
-            重叠率，取值 [0, 1)。步长 hop = L * (1 - overlapRatio)
-
+            重叠率，取值 [0, 1)。步长gsettings get org.gnome.desktop.interface gtk-enable-primary-paste hop = L * (1 - overlapRatio)
     返回：
         N : int
             所需的采样点数
@@ -46,7 +43,7 @@ def requiredSignalLengthForSquareSpectrogram(fs, L, overlapRatio=0.5):
 
 # ========== 示例用法 ==========
 if __name__ == "__main__":
-    fs = 40e6          # 40 MHz
+    fs = 16e6          # 40 MHz
     L = 1024
     overlap = 0.5
 
@@ -59,3 +56,12 @@ if __name__ == "__main__":
     print(f"对应的信号时长 T = {T*1000:.6f} ms")
     print(f"方形时频图尺寸 = {M} × {M}")
     print(f"验证：时间点数 = {(N-L)//(L//2)+1}，频率点数 = {L//2+1}")
+    
+    # 重叠率 = 50 % (hop = 512)
+    # 所需的采样点数
+    # N = 263168
+    # 对应的信号时长
+    # T = 16.448000
+    # ms
+    # 方形时频图尺寸 = 513 × 513
+    # 验证：时间点数 = 513，频率点数 = 513

@@ -3,8 +3,8 @@ import json
 import os
 
 # ==================== 配置部分 ====================
-DATASET_ROOT = "./sig_dataset"          # 数据集根目录
-OUTPUT_JSONL = "./sig_dataset/qwen_vl_train.jsonl"  # 输出 JSONL 文件路径
+DATASET_ROOT = "./sig_dataset417v2"          # 数据集根目录
+OUTPUT_JSONL = "./sig_dataset417v2/qwen_vl_train.jsonl"  # 输出 JSONL 文件路径
 # 图片路径前缀（若希望使用绝对路径则设为 DATASET_ROOT 的绝对路径；相对路径也可）
 IMAGE_BASE_PATH = os.path.abspath(DATASET_ROOT)
 

@@ -4,7 +4,7 @@ import os
 from torchsig.datasets.datasets import TorchSigIterableDataset, StaticTorchSigDataset
 from torchsig.utils.data_loading import WorkerSeedingDataLoader
 from torchsig.utils.writer import DatasetCreator
-
+# 使用torchsig开源数据集
 
 root = "./classifier_example"
 os.makedirs(root, exist_ok=True)

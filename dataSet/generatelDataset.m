@@ -6,10 +6,10 @@ params.fs = 192e6;
 params.SNR = 15;
 params.time_sample = 100e-6;
 params.num_fft = 4096;
-params.root_dir = './sig_dataset';
+params.root_dir = './sig_dataset417';
 % mod_type:msk,gmsk,oqpsk,bpsk,pi/4-bpsk,8psk,16qam,soqpsk;
 mod_types = ["msk","gmsk","oqpsk","bpsk","pi/4-bpsk","8psk","16qam","soqpsk"];
-num_per_class = 1;
+num_per_class = 80;
 
 generate_signal_dataset(mod_types, num_per_class, params);
 

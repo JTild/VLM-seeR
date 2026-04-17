@@ -1,6 +1,6 @@
-from typing import Optional, Tuple
-from plotSig import *
-
+from typing import Tuple
+from tempCode.plotSig import *
+# 用matlab转python生成数据集
 
 # ==================== 自定义调制与滤波器函数 ====================
 def rrcosfilter(N: int, alpha: float, Ts: float, Fs: float) -> Tuple[np.ndarray, np.ndarray]:

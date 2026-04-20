@@ -3,13 +3,13 @@ import json
 import os
 
 # ==================== 配置部分 ====================
-DATASET_ROOT = "./sig_dataset417v2"          # 数据集根目录
-OUTPUT_JSONL = "./sig_dataset417v2/qwen_vl_train.jsonl"  # 输出 JSONL 文件路径
-# 图片路径前缀（若希望使用绝对路径则设为 DATASET_ROOT 的绝对路径；相对路径也可）
-IMAGE_BASE_PATH = os.path.abspath(DATASET_ROOT)
+DATASET_ROOT = "./sig_dataset417v2"                     # 数据集根目录
+OUTPUT_JSONL = "./sig_dataset417v2/qwen_vl_train.jsonl" # 输出文件
+IMAGE_BASE_PATH = os.path.abspath(DATASET_ROOT)         # 图片绝对路径前缀
 
-# 用户提示文本（可根据需要修改）
-USER_PROMPT = "这些图片分别是一个信号的iq波形图，时频图和星座图，根据图片判断这个信号的干扰类型。"
+# 用户提示文本（如需在文本中指定图片位置，可使用 <image> 占位符）
+# Qwen2.5-VL 会自动按顺序将 images 中的图片与 <image> 对应，不写占位符则默认放在最前面
+USER_PROMPT = "<image><image><image>这些图片分别是一个信号的iq波形图，时频图和星座图，根据图片判断这个信号的调制类型。"
 
 # ==================== 主程序 ====================
 def main():
@@ -23,36 +23,31 @@ def main():
         for idx, row in meta.iterrows():
             mod_type = row["mod_type"]
 
-            # 构造三张图片的完整路径
+            # 三张图片的绝对路径
             iq_img = os.path.join(IMAGE_BASE_PATH, "iq_timing", row["iq_image"])
             tf_img = os.path.join(IMAGE_BASE_PATH, "time_freq", row["tf_image"])
             const_img = os.path.join(IMAGE_BASE_PATH, "constellation", row["const_image"])
 
-            # 检查图片是否存在（可选）
-            for img_path in (iq_img, tf_img, const_img):
-                if not os.path.exists(img_path):
-                    print(f"警告: 图片不存在 - {img_path}")
+            # 可选：检查图片是否存在
+            for img in (iq_img, tf_img, const_img):
+                if not os.path.exists(img):
+                    print(f"警告: 图片不存在 - {img}")
 
-            # 构造单条对话数据
+            # 构造新格式的记录
             record = {
                 "messages": [
                     {
                         "role": "user",
-                        "content": [
-                            {"type": "image", "image": iq_img},
-                            {"type": "image", "image": tf_img},
-                            {"type": "image", "image": const_img},
-                            {"type": "text", "text": USER_PROMPT}
-                        ]
+                        "content": USER_PROMPT               # 纯文本，可包含 <image> 占位符
                     },
                     {
                         "role": "assistant",
-                        "content": mod_type
+                        "content": mod_type                  # 助手回答也是纯文本
                     }
-                ]
+                ],
+                "images": [iq_img, tf_img, const_img]        # 图片路径列表
             }
 
-            # 写入一行 JSON
             f_out.write(json.dumps(record, ensure_ascii=False) + "\n")
 
     print(f"成功生成 {len(meta)} 条数据，保存至 {OUTPUT_JSONL}")

@@ -15,8 +15,8 @@ model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
 #     attn_implementation="flash_attention_2",
 #     device_map="auto",
 # )
-
 # default processer
+
 processor = AutoProcessor.from_pretrained(modelPath)
 
 # The default range for the number of visual tokens per image in the model is 4-16384.

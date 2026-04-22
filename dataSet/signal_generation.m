@@ -17,15 +17,15 @@ oqpskmod = comm.OQPSKModulator('SamplesPerSymbol',4,'RolloffFactor',0.25,'PulseS
 
 % 生成不同调制类型对应的比特序列
 if(mod_type=="oqpsk")
-    x = randi([0 3],num_bit,1);%产生6000个比特
+    x = randi([0 3],num_bit,1);
 elseif(mod_type=="soqpsk")
-    x = randi([0 3],num_bit,1);%产生6000个比特
+    x = randi([0 3],num_bit,1);
 elseif(mod_type=="8psk")
-    x = randi([0 7],num_bit,1);%产生6000个比特
+    x = randi([0 7],num_bit,1);
 elseif(mod_type=="16qam")
-    x = randi([0 15],num_bit,1);%产生6000个比特
+    x = randi([0 15],num_bit,1);
 else
-    x = randi([0 1],num_bit,1);%产生6000个比特
+    x = randi([0 1],num_bit,1);
 end
 
 % 根据调制类型进行信号调制与成型滤波

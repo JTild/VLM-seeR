@@ -3,9 +3,9 @@ import json
 import os
 
 # ==================== 配置部分 ====================
-DATASET_ROOT = "./sig_dataset417v2_test"                     # 数据集根目录
+DATASET_ROOT = "./sig_dataset417v3_test"                     # 数据集根目录
 # OUTPUT_JSONL = "./sig_dataset417v2/qwen_vl_test.jsonl" # 输出文件
-OUTPUT_JSONL = DATASET_ROOT+"/qwen_vl_test.jsonl" # 输出文件
+OUTPUT_JSONL = DATASET_ROOT+"/qwen_vl_testv3.jsonl" # 输出文件
 IMAGE_BASE_PATH = os.path.abspath(DATASET_ROOT)         # 图片绝对路径前缀
 
 # 用户提示文本（如需在文本中指定图片位置，可使用 <image> 占位符）

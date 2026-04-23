@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 # ========== 配置 ==========
-PRED_FILE = "/home/jql/code/LLaMA-Factory/saves/Qwen2.5-VL-72B-Instruct/lora/eval_2026-04-20-10-32-35/generated_predictions.jsonl"
-DATASET_ROOT = "./sig_dataset417v2_test"
-OUTPUT_IMAGE = DATASET_ROOT+"/confusion_matrix.png"
+PRED_FILE = "/home/jql/code/LLaMA-Factory/saves/Qwen2.5-VL-7B-Instruct/lora/eval_2026-04-23-10-21-56/generated_predictions.jsonl"
+DATASET_ROOT = "./sig_dataset417v3_test"
+OUTPUT_IMAGE = DATASET_ROOT+"/confusion_matrixv3.png"
 
 def clean_label(text):
 	"""清洗标签：去空格、统一小写"""

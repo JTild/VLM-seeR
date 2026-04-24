@@ -2,11 +2,11 @@ warning off;
 % 设置参数
 params.fb = 1e6;
 params.fs = 192e6;
-params.SNR = [10, 20];          % SNR 在 10~20 dB 均匀随机
+params.SNR = [5, 10];          % SNR 范围内随机
 % params.SNR = 15;
 params.time_sample = 100e-6;
 params.num_fft = 4096;
-params.root_dir = './sig_dataset417v3_test'; 
+params.root_dir = './sig_dataset424v4_test5-10dB'; 
 % mod_type:msk,gmsk,oqpsk,bpsk,pi/4-bpsk,8psk,16qam,soqpsk;
 mod_types = ["msk","gmsk","oqpsk","bpsk","pi/4-bpsk","8psk","16qam","soqpsk"];
 num_per_class = 30;

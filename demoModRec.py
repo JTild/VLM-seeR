@@ -3,41 +3,29 @@ from qwen_vl_utils import process_vision_info
 
 # default: Load the model on the available device(s)
 
-modelPath = "/home/jql/code/Qwen2.5vl/Ori"
+modelPath = "/home/jql/code/Qwen2.5vl/Qlorav1"
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     modelPath, torch_dtype="auto", device_map="auto"
 )
 
-# We recommend enabling flash_attention_2 for better acceleration and memory saving, especially in multi-image and video scenarios.
-# model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-#     "Qwen/Qwen2.5-VL-7B-Instruct",
-#     torch_dtype=torch.bfloat16,
-#     attn_implementation="flash_attention_2",
-#     device_map="auto",
-# )
-# default processer
-
 processor = AutoProcessor.from_pretrained(modelPath)
 
-# The default range for the number of visual tokens per image in the model is 4-16384.
-# You can set min_pixels and max_pixels according to your needs, such as a token range of 256-1280, to balance performance and cost.
-# min_pixels = 256*28*28
-# max_pixels = 1280*28*28
-# processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct", min_pixels=min_pixels, max_pixels=max_pixels)
-
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {
-                "type": "image",
-                "image": "R-C.jpeg",
-            },
-            {"type": "text", "text": "这张图片里有什么."},
-        ],
-    }
+image_paths = [
+	"./dataSet/sig_dataset/iq_timing/sig_000001_msk_snr15.0_iq.png",
+	"./dataSet/sig_dataset/time_freq/sig_000001_msk_snr15.0_tf.png",
+	"./dataSet/sig_dataset/constellation/sig_000001_msk_snr15.0_const.png",
 ]
+content = []
+for img in image_paths:
+    content.append({"type": "image", "image": img})
+content.append({"type": "text", "text": "这些图片分别是一个信号的iq波形图，时频图和星座图，根据图片判断这个信号的调制类型"})
 
+messages = [{"role": "user", "content": content}]
+
+# Preparation for inference
+text = processor.apply_chat_template(
+    messages, tokenize=False, add_generation_prompt=True
+)
 # Preparation for inference
 text = processor.apply_chat_template(
     messages, tokenize=False, add_generation_prompt=True
@@ -54,7 +42,7 @@ inputs = inputs.to("cuda")
 print(f"输入 token 数量（占位符阶段）: {inputs.input_ids.shape[1]}")
 
 # Inference: Generation of the output
-generated_ids = model.generate(**inputs, max_new_tokens=128)
+generated_ids = model.generate(**inputs, max_new_tokens=1000)
 generated_ids_trimmed = [
     out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
 ]

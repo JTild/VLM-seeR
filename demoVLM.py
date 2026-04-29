@@ -3,7 +3,8 @@ from qwen_vl_utils import process_vision_info
 
 # default: Load the model on the available device(s)
 
-modelPath = "/home/jql/code/Qwen2.5vl/Qlorav1"
+# modelPath = "/home/jql/code/Qwen2.5vl/Qlorav1"
+modelPath = "/home/shared/models/Qwen/Qwen3___5-9B"
 model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
     modelPath, torch_dtype="auto", device_map="auto"
 )
